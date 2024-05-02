@@ -17,12 +17,23 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from tkinter import filedialog, messagebox, scrolledtext, Tk, Label, Entry, Button, Frame
 import extract_msg
 import os
+import csv
+
+
 # Constants
 CSV_FILENAME = "../textextractor/text_analysis_results.csv"
 
 # Import string for string.punctuation
 import string
 
+def read_data_from_csv(file_path):
+    data = []
+    with open(file_path, 'r', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip the header row
+        for row in reader:
+            data.append(row)
+    return data
 
 # Text analysis function
 def analyze_text(text, url_email):
@@ -123,33 +134,93 @@ def serialize_named_entities(named_entities):
     return '; '.join(serialized_entities)
 
 # Function to save analysis results to a CSV file
-def save_results_to_csv(results):
-    # Serialize complex data types
-    results['POS Tags'] = '; '.join([f"{word}/{tag}" for word, tag in results['POS Tags']])
-    results['Named Entities'] = 'N/A'  # Assuming you find a way to serialize Named Entities
-    results['Sentiment Score'] = str(results['Sentiment Score'])
-    results['Readability Score'] = str(results['Readability Score'])
-    results['Most Common Bigrams'] = str(results['Most Common Bigrams'])
-    # Ensure all other complex data types are serialized similarly
+def save_results_to_csv(results, output_file):
+    # Ensure all results are in string format and properly serialized
+    if 'POS Tags' in results:
+        results['POS Tags'] = '; '.join([f"{word}/{tag}" for word, tag in results['POS Tags']])
+    if 'Named Entities' in results:
+        results['Named Entities'] = serialize_named_entities(results['Named Entities'])
 
-    # Check if file exists, if not, create it with headers
-    try:
-        with open(CSV_FILENAME, 'x', newline='', encoding='utf-8') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=results.keys())
+    # Choose the correct file mode
+    file_mode = 'a' if os.path.exists(output_file) else 'x'
+
+    # Writing to the file
+    with open(output_file, file_mode, newline='', encoding='utf-8') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=results.keys())
+        if file_mode == 'x':
             writer.writeheader()
-            writer.writerow(results)
-    except FileExistsError:
-        # Append the results to the CSV
-        with open(CSV_FILENAME, 'a', newline='', encoding='utf-8') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=results.keys())
-            writer.writerow(results)
+        writer.writerow(results)
 
-    messagebox.showinfo("Success", f"Analysis results appended to {CSV_FILENAME}.")
+    messagebox.showinfo("Success", "Results saved successfully to {}".format(output_file))
+
+
+def process_csv_data(input_file, output_file):
+    data = read_data_from_csv(input_file)
+    for row in data:
+        if len(row) >= 3:
+            text = row[0]  # Assuming the email text is in the first column
+            url_email = row[1]  # Assuming the URL/email is in the second column
+            email_type = 'Phishing' if row[2] == '1' else 'Safe'  # Assuming the email type is in the third column
+        else:
+            text = row[0]  # Assuming the email text is in the first column
+            url_email = ''  # Set URL/email to an empty string if not available
+            email_type = 'Unknown'  # Set email type to 'Unknown' if not available
+
+        results = analyze_text(text, url_email)
+        results['Email Type'] = email_type
+        save_results_to_csv(results, output_file)
+
+    # Display success message only after processing all rows
+    messagebox.showinfo("Success", f"All emails processed successfully. Results saved to {output_file}.")
 
 
 # GUI application class
 class TextAnalysisApp(tk.Tk):
     def __init__(self):
+        super().__init__()  # Initialize the parent class correctly
+        self.title("Text Analysis Tool")
+        self.geometry("800x500")
+        self.configure(background='light grey')
+
+        # Create a header label
+        header_label = Label(self, text="Text Analysis Tool", font=("Helvetica", 16), bg='light grey')
+        header_label.pack(pady=10)
+
+        # Text input area with label
+        Label(self, text="Input Text:", bg='light grey').pack(pady=(5, 0))
+        self.text_input = scrolledtext.ScrolledText(self, height=10)
+        self.text_input.pack(pady=5)
+
+        # URL/Email input area with label
+        Label(self, text="URL/Email address:", bg='light grey').pack(pady=(5, 0))
+        self.url_email_input = Entry(self, width=70)
+        self.url_email_input.pack(pady=5)
+
+        # Button Frame for operations
+        button_frame = Frame(self, bg='light grey')
+        button_frame.pack(pady=10)
+
+        # Buttons
+        analyze_button = Button(button_frame, text="Analyze", command=self.perform_analysis, bg='sky blue')
+        analyze_button.grid(row=0, column=0, padx=5)
+
+        save_button = Button(button_frame, text="Save to CSV", command=self.save_to_csv, bg='sky blue')
+        save_button.grid(row=0, column=1, padx=5)
+
+        load_file_button = Button(button_frame, text="Load File", command=self.load_file, bg='sky blue')
+        load_file_button.grid(row=0, column=2, padx=5)
+
+        process_csv_button = Button(button_frame, text="Process CSV", command=self.process_csv, bg='sky blue')
+        process_csv_button.grid(row=0, column=3, padx=5)
+
+    def process_csv(self):
+        input_file = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
+        if input_file:
+            output_file = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+            if output_file:
+                process_csv_data(input_file, output_file)
+                messagebox.showinfo("Success", f"CSV processed successfully. Results saved to {output_file}.")
+
         super().__init__()
         self.title("Text Analysis Tool")
         self.geometry("800x500")  # Adjust the size as needed
@@ -171,6 +242,16 @@ class TextAnalysisApp(tk.Tk):
         # Button Frame
         button_frame = tk.Frame(self, bg='light grey')
         button_frame.pack(pady=10)
+        process_csv_button = Button(button_frame, text="Process CSV", command=self.process_csv, bg='sky blue')
+        process_csv_button.grid(row=0, column=3, padx=5)
+
+        def process_csv(self):
+            input_file = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
+            if input_file:
+                output_file = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+                if output_file:
+                    process_csv_data(input_file, output_file)
+                    messagebox.showinfo("Success", f"CSV processed successfully. Results saved to {output_file}.")
 
         # Analyze button
         analyze_button = Button(button_frame, text="Analyze", command=self.perform_analysis, bg='sky blue')
@@ -250,7 +331,15 @@ class TextAnalysisApp(tk.Tk):
 
     def save_to_csv(self):
         if hasattr(self, 'results') and self.results:
-            save_results_to_csv(self.results)
+            output_file = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+            if output_file:
+                try:
+                    save_results_to_csv(self.results, output_file)
+                    messagebox.showinfo("Success", "Results saved successfully to {}".format(output_file))
+                except Exception as e:
+                    messagebox.showerror("Error", f"Failed to save file: {str(e)}")
+            else:
+                messagebox.showerror("Error", "Save operation cancelled. No file was selected.")
         else:
             messagebox.showerror("Error", "Please perform analysis before saving.")
 
