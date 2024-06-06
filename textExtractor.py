@@ -3,6 +3,7 @@ from tkinter import scrolledtext, messagebox, filedialog, Label, Entry, Button, 
 import csv
 import re
 import nltk
+
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 nltk.download('maxent_ne_chunker')
@@ -18,7 +19,6 @@ from tkinter import filedialog, messagebox, scrolledtext, Tk, Label, Entry, Butt
 import extract_msg
 import os
 import csv
-
 
 # Constants
 CSV_FILENAME = "../textextractor/text_analysis_results.csv"
@@ -76,19 +76,19 @@ def analyze_text(text, url_email):
     email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
     words = text.split()
     word_count = len(words)
-    url_count = len(re.findall(url_pattern, url_email))  # Search only within the URL/email field
-    email_count = len(re.findall(email_pattern, url_email))  # Search only within the URL/email field
+    url_count = len(re.findall(url_pattern, text))  # Search within the text
+    email_count = len(re.findall(email_pattern, text))  # Search within the text
     sentences = re.split(r'[.!?]+', text)
     sentence_count = len(sentences) - 1  # Adjust for the split behavior on final punctuation
     average_sentence_length = sum(
         len(sentence.split()) for sentence in sentences if sentence) / sentence_count if sentence_count else 0
     num_dots = text.count('.')
-    url_length = len(url_email) if url_email else 'N/A'  # Assuming url_email contains a URL
+    urls = re.findall(url_pattern, text)
+    url_length = max([len(url) for url in urls]) if urls else 0  # Calculate the maximum length of URLs found in the text
     num_dash = text.count('-')
-    at_symbol = '@' in text
+    at_symbol = 1 if '@' in text else 0  # Change to 1 or 0
     num_numeric_chars = sum(char.isdigit() for char in text)
-    random_string = 'N/A'  # You would need a way to define what a random string looks like
-    ip_address = bool(re.search(r'\b(?:\d{1,3}\.){3}\d{1,3}\b', text))
+    ip_address = 1 if bool(re.search(r'\b(?:\d{1,3}\.){3}\d{1,3}\b', text)) else 0  # Change to 1 or 0
     punctuation_count = {char: text.count(char) for char in string.punctuation}
     unique_word_count = len(set(words))
     lexical_diversity = unique_word_count / word_count if word_count else 0
@@ -106,7 +106,6 @@ def analyze_text(text, url_email):
         "NumDash": num_dash,
         "AtSymbol": at_symbol,
         "NumNumericChars": num_numeric_chars,
-        "RandomString": random_string,
         "IpAddress": ip_address,
         "Lexical Diversity": lexical_diversity,
         "POS Tags": pos_tags,
@@ -134,41 +133,41 @@ def serialize_named_entities(named_entities):
     return '; '.join(serialized_entities)
 
 # Function to save analysis results to a CSV file
-def save_results_to_csv(results, output_file):
+def save_results_to_csv(results, output_file, show_message=True):
     # Ensure all results are in string format and properly serialized
     if 'POS Tags' in results:
         results['POS Tags'] = '; '.join([f"{word}/{tag}" for word, tag in results['POS Tags']])
     if 'Named Entities' in results:
         results['Named Entities'] = serialize_named_entities(results['Named Entities'])
 
-    # Choose the correct file mode
-    file_mode = 'a' if os.path.exists(output_file) else 'x'
-
-    # Writing to the file
-    with open(output_file, file_mode, newline='', encoding='utf-8') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=results.keys())
-        if file_mode == 'x':
+    # Check if file exists, if not, create it with headers
+    try:
+        with open(output_file, 'x', newline='', encoding='utf-8') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=results.keys())
             writer.writeheader()
-        writer.writerow(results)
+            writer.writerow(results)
+    except FileExistsError:
+        # Append the results to the CSV
+        with open(output_file, 'a', newline='', encoding='utf-8') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=results.keys())
+            writer.writerow(results)
 
-    messagebox.showinfo("Success", "Results saved successfully to {}".format(output_file))
-
+    #if show_message:
+     #   messagebox.showinfo("Success", f"Analysis results appended to {output_file}.")
 
 def process_csv_data(input_file, output_file):
     data = read_data_from_csv(input_file)
     for row in data:
-        if len(row) >= 3:
+        if len(row) >= 2:
             text = row[0]  # Assuming the email text is in the first column
-            url_email = row[1]  # Assuming the URL/email is in the second column
-            email_type = 'Phishing' if row[2] == '1' else 'Safe'  # Assuming the email type is in the third column
+            email_type = 'Phishing' if row[1] == '1' else 'Safe'  # Assuming the email type is in the second column
         else:
             text = row[0]  # Assuming the email text is in the first column
-            url_email = ''  # Set URL/email to an empty string if not available
             email_type = 'Unknown'  # Set email type to 'Unknown' if not available
 
-        results = analyze_text(text, url_email)
+        results = analyze_text(text, '')  # Pass an empty string as url_email since it's not available in the CSV
         results['Email Type'] = email_type
-        save_results_to_csv(results, output_file)
+        save_results_to_csv(results, output_file, show_message=False)
 
     # Display success message only after processing all rows
     messagebox.showinfo("Success", f"All emails processed successfully. Results saved to {output_file}.")
@@ -220,50 +219,6 @@ class TextAnalysisApp(tk.Tk):
             if output_file:
                 process_csv_data(input_file, output_file)
                 messagebox.showinfo("Success", f"CSV processed successfully. Results saved to {output_file}.")
-
-        super().__init__()
-        self.title("Text Analysis Tool")
-        self.geometry("800x500")  # Adjust the size as needed
-        self.configure(background='light grey')  # Set a background color
-
-        # Create a header label
-        header_label = Label(self, text="Text Analysis Tool", font=("Helvetica", 16), bg='light grey')
-        header_label.pack(pady=10)
-
-        # Text input area with label
-        Label(self, text="Input Text:", bg='light grey').pack(pady=(5, 0))
-        self.text_input = scrolledtext.ScrolledText(self, height=10)
-        self.text_input.pack(pady=5)
-        # URL/Email input area with label
-        Label(self, text="URL/Email address:", bg='light grey').pack(pady=(5, 0))
-        self.url_email_input = Entry(self, width=70)
-        self.url_email_input.pack(pady=5)
-
-        # Button Frame
-        button_frame = tk.Frame(self, bg='light grey')
-        button_frame.pack(pady=10)
-        process_csv_button = Button(button_frame, text="Process CSV", command=self.process_csv, bg='sky blue')
-        process_csv_button.grid(row=0, column=3, padx=5)
-
-        def process_csv(self):
-            input_file = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
-            if input_file:
-                output_file = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
-                if output_file:
-                    process_csv_data(input_file, output_file)
-                    messagebox.showinfo("Success", f"CSV processed successfully. Results saved to {output_file}.")
-
-        # Analyze button
-        analyze_button = Button(button_frame, text="Analyze", command=self.perform_analysis, bg='sky blue')
-        analyze_button.grid(row=0, column=0, padx=5)
-
-        # Save to CSV button
-        save_button = Button(button_frame, text="Save to CSV", command=self.save_to_csv, bg='sky blue')
-        save_button.grid(row=0, column=1, padx=5)
-
-        # Load File button
-        load_file_button = Button(button_frame, text="Load File", command=self.load_file, bg='sky blue')
-        load_file_button.grid(row=0, column=2, padx=5)
 
     def load_file(self):
         filetypes = [("Text files", "*.txt"), ("Email files", "*.msg"), ("All files", "*.*")]
@@ -317,11 +272,11 @@ class TextAnalysisApp(tk.Tk):
             f"Sentiment Score: {self.results['Sentiment Score']} (Score indicating the emotional tone; closer to 1 is more positive)\n"
             f"Readability Score: {self.results['Readability Score']} (Flesch Reading Ease score; higher is easier to read)\n"
             f"NumDots: {self.results['NumDots']} (Number of periods in the text)\n"
-            f"UrlLength: {self.results['UrlLength']} (Length of any URLs in characters)\n"
+            f"UrlLength: {self.results['UrlLength']} (Length of the longest URL found in the text)\n"
             f"NumDash: {self.results['NumDash']} (Number of dashes in the text)\n"
-            f"AtSymbol: {'Present' if self.results['AtSymbol'] else 'Not present'} (Presence of @ symbol)\n"
+            f"AtSymbol: {self.results['AtSymbol']} (Presence of @ symbol: 1 if present, 0 if not)\n"
             f"NumNumericChars: {self.results['NumNumericChars']} (Number of numeric characters in the text)\n"
-            f"IpAddress: {'Present' if self.results['IpAddress'] else 'Not present'} (Presence of an IP address)\n"
+            f"IpAddress: {self.results['IpAddress']} (Presence of an IP address: 1 if present, 0 if not)\n"
             f"Most Common Bigrams: {self.results['Most Common Bigrams']} "
             "(The five most common two-word combinations and their frequencies)\n"
             # Add more explanations as needed
