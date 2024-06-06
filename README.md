@@ -31,4 +31,4 @@ PhishGuard AI employs several machine learning algorithms to analyze email and t
 
 ## Acknowledgments
 - Dr. Arik Pharan, Project Supervisor
-- Team Members: Gal Erez and Eil Ronen
+- Team Members: Gal Erez and Eyal Ronen
