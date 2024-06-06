@@ -29,12 +29,6 @@ python phishguard.py
 ## How It Works
 PhishGuard AI employs several machine learning algorithms to analyze email and text messages for phishing patterns. The system scans and evaluates each message, flagging those that exhibit characteristics typical of phishing attempts.
 
-## Contributing
-Contributions to PhishGuard AI are welcome. Please fork the repository and submit a pull request with your features or fixes.
-
-## License
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
-
 ## Acknowledgments
 - Dr. Arik Pharan, Project Supervisor
 - Team Members: Gal Erez and Eil Ronen
