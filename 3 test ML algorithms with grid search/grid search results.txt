@@ -1,0 +1,188 @@
+Random State: 42
+Training set - Total: 6246, Safe: 3123, Phishing: 3123
+Test set - Total: 2000, Safe: 1219, Phishing: 781
+Training Logistic Regression...
+Training KNN...
+Training Random Forest...
+Training Gradient Boosting...
+Training XGBoost...
+Training Naive Bayes...
+Training Decision Tree...
+Training Neural Network...
+
+Random State: 123
+Training set - Total: 6246, Safe: 3123, Phishing: 3123
+Test set - Total: 2000, Safe: 1219, Phishing: 781
+Training Logistic Regression...
+Training KNN...
+Training Random Forest...
+Training Gradient Boosting...
+Training XGBoost...
+Training Naive Bayes...
+Training Decision Tree...
+Training Neural Network...
+
+Logistic Regression Results (Random State: 42):
+Best Parameters: {'C': 10, 'penalty': 'l2'}
+Accuracy: 0.7795
+Precision: 0.6793
+Recall: 0.8246
+F1-score: 0.7449
+Confusion Matrix:
+[[915 304]
+ [137 644]]
+
+KNN Results (Random State: 42):
+Best Parameters: {'n_neighbors': 7, 'weights': 'distance'}
+Accuracy: 0.8145
+Precision: 0.7556
+Recall: 0.7759
+F1-score: 0.7656
+Confusion Matrix:
+[[1023  196]
+ [ 175  606]]
+
+Random Forest Results (Random State: 42):
+Best Parameters: {'max_depth': 20, 'min_samples_split': 2, 'n_estimators': 100}
+Accuracy: 0.8955
+Precision: 0.8405
+Recall: 0.9040
+F1-score: 0.8711
+Confusion Matrix:
+[[1085  134]
+ [  75  706]]
+
+Gradient Boosting Results (Random State: 42):
+Best Parameters: {'learning_rate': 0.1, 'max_depth': 4, 'n_estimators': 200}
+Accuracy: 0.8890
+Precision: 0.8316
+Recall: 0.8976
+F1-score: 0.8633
+Confusion Matrix:
+[[1077  142]
+ [  80  701]]
+
+XGBoost Results (Random State: 42):
+Best Parameters: {'subsample': 1.0, 'n_estimators': 200, 'min_child_weight': 3, 'max_depth': 5, 'learning_rate': 0.1, 'gamma': 0, 'colsample_bytree': 1.0}
+Accuracy: 0.8910
+Precision: 0.8300
+Recall: 0.9065
+F1-score: 0.8666
+Confusion Matrix:
+[[1074  145]
+ [  73  708]]
+
+Naive Bayes Results (Random State: 42):
+Best Parameters: {}
+Accuracy: 0.6380
+Precision: 0.6508
+Recall: 0.1575
+F1-score: 0.2536
+Confusion Matrix:
+[[1153   66]
+ [ 658  123]]
+
+Decision Tree Results (Random State: 42):
+Best Parameters: {'max_depth': 10, 'min_samples_split': 2}
+Accuracy: 0.8380
+Precision: 0.7553
+Recall: 0.8656
+F1-score: 0.8067
+Confusion Matrix:
+[[1000  219]
+ [ 105  676]]
+
+Neural Network Results (Random State: 42):
+Best Parameters: {'activation': 'relu', 'alpha': 0.0001, 'hidden_layer_sizes': (100,)}
+Accuracy: 0.8890
+Precision: 0.8316
+Recall: 0.8976
+F1-score: 0.8633
+Confusion Matrix:
+[[1077  142]
+ [  80  701]]
+
+Logistic Regression Results (Random State: 123):
+Best Parameters: {'C': 10, 'penalty': 'l2'}
+Accuracy: 0.7900
+Precision: 0.6870
+Recall: 0.8489
+F1-score: 0.7595
+Confusion Matrix:
+[[917 302]
+ [118 663]]
+
+KNN Results (Random State: 123):
+Best Parameters: {'n_neighbors': 7, 'weights': 'distance'}
+Accuracy: 0.8255
+Precision: 0.7660
+Recall: 0.7964
+F1-score: 0.7809
+Confusion Matrix:
+[[1029  190]
+ [ 159  622]]
+
+Random Forest Results (Random State: 123):
+Best Parameters: {'max_depth': 20, 'min_samples_split': 2, 'n_estimators': 100}
+Accuracy: 0.8980
+Precision: 0.8463
+Recall: 0.9027
+F1-score: 0.8736
+Confusion Matrix:
+[[1091  128]
+ [  76  705]]
+
+Gradient Boosting Results (Random State: 123):
+Best Parameters: {'learning_rate': 0.1, 'max_depth': 4, 'n_estimators': 200}
+Accuracy: 0.8970
+Precision: 0.8370
+Recall: 0.9142
+F1-score: 0.8739
+Confusion Matrix:
+[[1080  139]
+ [  67  714]]
+
+XGBoost Results (Random State: 123):
+Best Parameters: {'subsample': 0.8, 'n_estimators': 200, 'min_child_weight': 3, 'max_depth': 5, 'learning_rate': 0.1, 'gamma': 0, 'colsample_bytree': 1.0}
+Accuracy: 0.9045
+Precision: 0.8504
+Recall: 0.9168
+F1-score: 0.8823
+Confusion Matrix:
+[[1093  126]
+ [  65  716]]
+
+Naive Bayes Results (Random State: 123):
+Best Parameters: {}
+Accuracy: 0.6505
+Precision: 0.7050
+Recall: 0.1805
+F1-score: 0.2875
+Confusion Matrix:
+[[1160   59]
+ [ 640  141]]
+
+Decision Tree Results (Random State: 123):
+Best Parameters: {'max_depth': 10, 'min_samples_split': 2}
+Accuracy: 0.8450
+Precision: 0.7704
+Recall: 0.8592
+F1-score: 0.8123
+Confusion Matrix:
+[[1019  200]
+ [ 110  671]]
+
+Neural Network Results (Random State: 123):
+Best Parameters: {'activation': 'relu', 'alpha': 0.0001, 'hidden_layer_sizes': (100,)}
+Accuracy: 0.8895
+Precision: 0.8526
+Recall: 0.8668
+F1-score: 0.8597
+Confusion Matrix:
+[[1102  117]
+ [ 104  677]]
+
+Best Overall Model: XGBoost (Random State: 123, F1-score: 0.8823)
+Best Parameters: {'subsample': 0.8, 'n_estimators': 200, 'min_child_weight': 3, 'max_depth': 5, 'learning_rate': 0.1, 'gamma': 0, 'colsample_bytree': 1.0}
+
+Process finished with exit code 0
